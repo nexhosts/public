@@ -10,6 +10,7 @@ GREEN="\033[1;32m"     # SUCCESS → Successfully completed tasks
 YELLOW="\033[1;33m"    # WARN → Warnings, non-critical issues
 RED="\033[1;31m"       # ERROR → Critical errors, exit points
 RESET="\033[0m"
+BOLD="\033[1m"
 
 # Logging function
 log_message() {
@@ -50,6 +51,7 @@ log_debug()       { echo -e "${CYAN}[DEBUG]${RESET} $1"; }
 log_success()     { echo -e "${GREEN}[SUCCESS]${RESET} $1"; }
 log_warn()        { echo -e "${YELLOW}[WARN]${RESET} $1"; }
 log_error()       { echo -e "${RED}[ERROR]${RESET} $1" >&2; }  # Redirect to stderr
+log_bold()        { echo -e "${BOLD}$1${RESET}"; }
 
 # Check SSH connectivity
 check_ssh_connection() {
