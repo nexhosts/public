@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+IFS=$'\n\t'
 
 # ANSI Color Codes
 BLUE="\033[1;34m"      # INFO → General information
