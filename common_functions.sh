@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # ANSI Color Codes
-RESET="\033[0m"
-RED="\033[1;31m"       # ERROR → Critical errors, exit points
+BLUE="\033[1;34m"      # INFO → General information
+MAGENTA="\033[1;35m"   # PROCESSING → Tasks in progress
+CYAN="\033[1;36m"      # DEBUG → Debugging messages
 GREEN="\033[1;32m"     # SUCCESS → Successfully completed tasks
 YELLOW="\033[1;33m"    # WARN → Warnings, non-critical issues
-BLUE="\033[1;34m"      # INFO → General information
-CYAN="\033[1;36m"      # DEBUG → Debugging messages
-MAGENTA="\033[1;35m"   # PROCESSING → Tasks in progress
+RED="\033[1;31m"       # ERROR → Critical errors, exit points
+RESET="\033[0m"
 
 # Logging function
 log_message() {
@@ -42,6 +42,13 @@ error_exit() {
     log_message "ERROR" "$1"
     exit 1
 }
+
+log_info()        { echo -e "${BLUE}[INFO]${RESET} $1"; }
+log_processing()  { echo -e "${MAGENTA}[PROCESSING]${RESET} $1"; }
+log_debug()       { echo -e "${CYAN}[DEBUG]${RESET} $1"; }
+log_success()     { echo -e "${GREEN}[SUCCESS]${RESET} $1"; }
+log_warn()        { echo -e "${YELLOW}[WARN]${RESET} $1"; }
+log_error()       { echo -e "${RED}[ERROR]${RESET} $1" >&2; }  # Redirect to stderr
 
 # Check SSH connectivity
 check_ssh_connection() {
