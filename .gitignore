@@ -1,15 +1,12 @@
 # ===============================
 # Python
-# ===============================
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 build/
@@ -29,11 +26,9 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
 # PyInstaller
 *.manifest
 *.spec
-
 # Virtual environments
 .env/
 .venv/
@@ -41,7 +36,6 @@ env/
 venv/
 ENV/
 env.bak/
-
 # Test/coverage reports
 htmlcov/
 .tox/
@@ -54,35 +48,21 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
-
-# ===============================
 # macOS
-# ===============================
-
 # macOS Finder metadata
 .DS_Store
 .AppleDouble
 .LSOverride
-
 # Icon file created by macOS (may contain a carriage return)
 Icon?
-
 # Thumbnail cache files
 ._*
 .Spotlight-V100
 .Trashes
-
-# ===============================
 # Visual Studio Code
-# ===============================
-
 # User-specific VS Code settings and workspace configurations
 .vscode/
-
-# ===============================
 # Temporary Files
-# ===============================
-
 # Generic temporary files
 *.tmp
 *.temp
@@ -91,5 +71,12 @@ Icon?
 *~
 *.bak
 .p10k.zsh
-.p10k.zsh
-.p10k.zsh
+*.iso
+*.img
+*.qcow2
+*.vmdk
+*.vdi
+*.raw
+*.bin
+*.dmg
+# Disk image files
