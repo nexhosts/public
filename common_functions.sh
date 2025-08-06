@@ -1,18 +1,37 @@
 #!/bin/bash
 set -euo pipefail
 IFS=$'\n\t'
+# ===============================
+# Color & Logging Setup
+# ===============================
 
-# ANSI Color Codes
-BLUE="\033[1;34m"      # INFO → General information
-MAGENTA="\033[1;35m"   # PROCESSING → Tasks in progress
-CYAN="\033[1;36m"      # DEBUG → Debugging messages
-GREEN="\033[1;32m"     # SUCCESS → Successfully completed tasks
-YELLOW="\033[1;33m"    # WARN → Warnings, non-critical issues
-RED="\033[1;31m"       # ERROR → Critical errors, exit points
-RESET="\033[0m"
-BOLD="\033[1m"
+define_logger() {
+    # Check if tput is available and TERM is defined
+    if command -v tput >/dev/null 2>&1 && [ -n "$TERM" ]; then
+        RED=$(tput setaf 1)
+        GREEN=$(tput setaf 2)
+        YELLOW=$(tput setaf 3)
+        BLUE=$(tput setaf 4)
+        MAGENTA=$(tput setaf 5)
+        CYAN=$(tput setaf 6)
+        RESET=$(tput sgr0)
+        BOLD=$(tput bold)
+    else
+        # ANSI Color Fallback
+        RED="\033[1;31m"
+        GREEN="\033[1;32m"
+        YELLOW="\033[1;33m"
+        BLUE="\033[1;34m"
+        MAGENTA="\033[1;35m"
+        CYAN="\033[1;36m"
+        RESET="\033[0m"
+        BOLD="\033[1m"
+    fi
+}
 
-# Logging function
+# Initialize local logger colors
+define_logger
+
 log_message() {
     local level="${1:-INFO}"
     shift
@@ -32,17 +51,38 @@ log_message() {
     local timestamp
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-    if [ "$level" = "ERROR" ]; then
+    if [[ "$level" == "ERROR" ]]; then
         printf "%b%s [%s] %s%b\n" "$color" "$timestamp" "$level" "$message" "$RESET" >&2
     else
         printf "%b%s [%s] %s%b\n" "$color" "$timestamp" "$level" "$message" "$RESET"
     fi
 }
 
-# Exit script on error
+# Exit with ERROR log
 error_exit() {
     log_message "ERROR" "$1"
     exit 1
+}
+
+# ------------------------------------------------------------------------------
+# Generate and inject logger functions to remote script (for SSH use)
+# ------------------------------------------------------------------------------
+generate_remote_logger() {
+    echo "# --- Begin Remote Logger ---"
+    declare -f define_logger
+    echo
+    declare -f log_message
+    echo
+    echo "define_logger"
+    echo "# --- End Remote Logger ---"
+}
+
+# Example: Usage for remote logging (if needed)
+log_remote() {
+    local level="${1:-INFO}"
+    shift
+    local msg="$*"
+    ssh user@remote_host "$(generate_remote_logger); log_message \"$level\" \"$msg\""
 }
 
 log_info()        { echo -e "${BLUE}[INFO]${RESET} $1"; }
