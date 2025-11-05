@@ -11,16 +11,6 @@ set -euo pipefail
 USER_NAME="dev"
 RUN_SUDO=""
 
-# --- Detect if root ---
-if [ "$(id -u)" -ne 0 ]; then
-  if command -v sudo &>/dev/null; then
-    RUN_SUDO="sudo"
-  else
-    echo "❌ This script must be run as root or with sudo privileges."
-    exit 1
-  fi
-fi
-
 # --- Parse arguments ---
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -37,12 +27,34 @@ done
 
 echo "👤 Setting up user: $USER_NAME"
 
+# --- Detect if running as root ---
+if [ "$(id -u)" -eq 0 ]; then
+    RUN_SUDO=""
+else
+    if command -v sudo &>/dev/null; then
+        RUN_SUDO="sudo"
+    else
+        # Try to install sudo if possible
+        if command -v apt &>/dev/null; then
+            echo "🔧 Installing sudo..."
+            su -c "apt update && apt install -y sudo" || {
+                echo "❌ Failed to install sudo. Please run as root."
+                exit 1
+            }
+            RUN_SUDO="sudo"
+        else
+            echo "❌ 'sudo' command not found and cannot install. Run this script as root."
+            exit 1
+        fi
+    fi
+fi
+
 # --- Create user if not exists ---
 if id "$USER_NAME" &>/dev/null; then
-  echo "✅ User '$USER_NAME' already exists."
+    echo "✅ User '$USER_NAME' already exists."
 else
-  echo "➕ Creating user '$USER_NAME'..."
-  $RUN_SUDO useradd -m -s /bin/bash -G sudo "$USER_NAME"
+    echo "➕ Creating user '$USER_NAME'..."
+    $RUN_SUDO useradd -m -s /bin/bash -G sudo "$USER_NAME"
 fi
 
 # --- Remove password (SSH-only login) ---
@@ -54,14 +66,14 @@ DEST_DIR="/home/$USER_NAME/.ssh"
 DEST_AUTH_KEYS="$DEST_DIR/authorized_keys"
 
 if [ -f "$SRC_AUTH_KEYS" ]; then
-  echo "🔑 Copying SSH authorized_keys..."
-  $RUN_SUDO mkdir -p "$DEST_DIR"
-  $RUN_SUDO cp -f "$SRC_AUTH_KEYS" "$DEST_AUTH_KEYS"
-  $RUN_SUDO chown -R "$USER_NAME:$USER_NAME" "$DEST_DIR"
-  $RUN_SUDO chmod 700 "$DEST_DIR"
-  $RUN_SUDO chmod 600 "$DEST_AUTH_KEYS"
+    echo "🔑 Copying SSH authorized_keys..."
+    $RUN_SUDO mkdir -p "$DEST_DIR"
+    $RUN_SUDO cp -f "$SRC_AUTH_KEYS" "$DEST_AUTH_KEYS"
+    $RUN_SUDO chown -R "$USER_NAME:$USER_NAME" "$DEST_DIR"
+    $RUN_SUDO chmod 700 "$DEST_DIR"
+    $RUN_SUDO chmod 600 "$DEST_AUTH_KEYS"
 else
-  echo "⚠️  No $SRC_AUTH_KEYS found. Skipping SSH key copy."
+    echo "⚠️  No $SRC_AUTH_KEYS found. Skipping SSH key copy."
 fi
 
 # --- Configure passwordless sudo ---
