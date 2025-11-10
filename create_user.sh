@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-#  create_user.sh  –  Create / fix dev user + password-less sudo (auto-repair)
+#  create_user.sh 
+#  Creates a user, copies root's authorized_keys, and grants password-less sudo.
 #  Author:  Grok AI for nexhenry
 # =============================================================================
 
