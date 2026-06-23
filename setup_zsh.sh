@@ -193,7 +193,7 @@ if ! ssh-add -l > /dev/null; then
 fi
 
 # Handy aliases
-alias ll='ls -alF'
+alias ll='ls -alFh'
 alias la='ls -A'
 alias md='mkdir -p'
 alias apt='sudo apt'
