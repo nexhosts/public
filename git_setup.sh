@@ -460,6 +460,53 @@ run_as_git_user() {
     fi
 }
 
+ensure_setup_packages() {
+    local -a packages=()
+    command -v git >/dev/null 2>&1 || packages+=(git)
+    command -v ssh-add >/dev/null 2>&1 || packages+=(openssh-client)
+    command -v ssh-keygen >/dev/null 2>&1 || packages+=(openssh-client)
+
+    local -A seen=()
+    local -a unique=()
+    local pkg
+    for pkg in "${packages[@]}"; do
+        [[ -n "${seen[$pkg]:-}" ]] && continue
+        seen[$pkg]=1
+        unique+=("$pkg")
+    done
+
+    [[ ${#unique[@]} -eq 0 ]] && return 0
+
+    echo "[INFO] Installing required packages: ${unique[*]}" >&2
+
+    as_root() {
+        if [[ $(id -u) -eq 0 ]]; then
+            "$@"
+        elif command -v sudo >/dev/null 2>&1; then
+            sudo "$@"
+        else
+            echo "ERROR: missing packages (${unique[*]}) and sudo is unavailable." >&2
+            exit 1
+        fi
+    }
+
+    if command -v apt-get >/dev/null 2>&1; then
+        as_root env DEBIAN_FRONTEND=noninteractive apt-get update -qq
+        as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${unique[@]}"
+    elif command -v dnf >/dev/null 2>&1; then
+        as_root dnf install -y "${unique[@]}"
+    elif command -v yum >/dev/null 2>&1; then
+        as_root yum install -y "${unique[@]}"
+    elif command -v apk >/dev/null 2>&1; then
+        as_root apk add --no-cache "${unique[@]}"
+    else
+        echo "ERROR: unsupported package manager; install manually: ${unique[*]}" >&2
+        exit 1
+    fi
+}
+
+ensure_setup_packages
+
 run_as_git_user env \
     ID="$ID" \
     TARGET_HOME="$target_home" \
